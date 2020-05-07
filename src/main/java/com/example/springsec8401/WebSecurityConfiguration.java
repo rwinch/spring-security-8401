@@ -9,6 +9,9 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.web.authentication.AnonymousAuthenticationFilter;
+import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
+import org.springframework.security.web.context.NullSecurityContextRepository;
 
 @Configuration
 public class WebSecurityConfiguration
@@ -30,7 +33,8 @@ public class WebSecurityConfiguration
             http.csrf().disable();
             http.authorizeRequests()
                     .antMatchers("/session/**").permitAll().and()
-                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.ALWAYS);
+                .sessionManagement()
+					.sessionCreationPolicy(SessionCreationPolicy.ALWAYS);
             // @formatter:on
         }
     }
@@ -44,9 +48,15 @@ public class WebSecurityConfiguration
         {
             // @formatter:off
             http.csrf().disable();
+            http.anonymous().disable();
+			AnonymousAuthenticationFilter anonymous = new AnonymousAuthenticationFilter("key");
+			anonymous.setAuthenticationDetailsSource((request) -> null);
+            http.addFilter(anonymous);
+            http.requestCache().disable();
+            http.securityContext().securityContextRepository(new NullSecurityContextRepository());
             http.authorizeRequests()
                     .antMatchers("/stateless/**").permitAll().and()
-                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+                .sessionManagement().disable();
             // @formatter:on
         }
 
